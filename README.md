@@ -8,5 +8,4 @@ An app that tells us the current weather for a specific location or current loca
 3) Head over to the folder's lib/temperature.dart and paste your api key there.
 
 # Some screenshots
-![img]('/screenshots/ss_1.png')
-![img]('/screenshots/ss_2.png')
+![image]('/screenshots/ss_1.png') | ![image]('/screenshots/ss_2.png')
