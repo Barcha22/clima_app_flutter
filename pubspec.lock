@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  custom_refresh_indicator:
+    dependency: "direct dev"
+    description:
+      name: custom_refresh_indicator
+      sha256: c34dd1dfb1f6b9ee2db9c5972586dba5e4445d79f8431f6ab098a6e963ccd39c
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   dbus:
     dependency: transitive
     description:
@@ -123,14 +131,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_weather_bg_null_safety:
-    dependency: "direct dev"
-    description:
-      name: flutter_weather_bg_null_safety
-      sha256: "268820fad42588882341ca4475ec0dc54d69897c5b1b15f2b4d13ccacd0b7457"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -352,6 +352,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  pull_to_refresh:
+    dependency: "direct dev"
+    description:
+      name: pull_to_refresh
+      sha256: bbadd5a931837b57739cf08736bea63167e284e71fb23b218c8c9a6e042aad12
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -445,14 +453,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.0"
-  weather:
-    dependency: "direct dev"
-    description:
-      name: weather
-      sha256: "7d49931907242b2ae13f772ff9a721c51d54944f46e527ae41de68cb5c971267"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.1"
   web:
     dependency: transitive
     description:
