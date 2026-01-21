@@ -2,15 +2,11 @@ import 'package:flutter/material.dart';
 
 class GetIconFromUrl extends StatelessWidget {
   final String url;
-  final double size;
+  final double? size;
   final Color? color;
 
-  const GetIconFromUrl({
-    Key? key,
-    required this.url,
-    this.size = 160,
-    this.color,
-  }) : super(key: key);
+  const GetIconFromUrl({Key? key, required this.url, this.size, this.color})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {

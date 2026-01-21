@@ -6,8 +6,9 @@ import 'dart:convert';
 class TemperatureServices {
   final coordinates = LocationServices();
   Map<String, dynamic>? _cachedData;
+  Map<String, dynamic>? _cachedForecast;
 
-  //0. function to make api call
+  //0a. function to make api call for current location
   Future<Map<String, dynamic>> makeApiCall() async {
     if (_cachedData != null) {
       return _cachedData!;
@@ -37,7 +38,7 @@ class TemperatureServices {
     }
   }
 
-  //1. function to get temperature details
+  //1a. function to get temperature details
   Future<List<String>> getDetailsAboutTemperature() async {
     try {
       final jsonData = await makeApiCall();
@@ -54,7 +55,51 @@ class TemperatureServices {
     }
   }
 
+  //0b. function make api call for 3 days forecast
+  Future<Map<String, dynamic>> makeApiCalls() async {
+    if (_cachedForecast != null) {
+      return _cachedForecast!;
+    }
+    try {
+      final position = await coordinates.getCurrentLocation();
+      final apiKey = dotenv.env["MY_API"] ?? ' ';
+      if (apiKey.isEmpty) {
+        throw Exception("Api key not found in .env");
+      }
+      final response = await http.get(
+        Uri.parse(
+          "http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${position.latitude},${position.longitude}&days=3",
+        ),
+      );
+      if (response.statusCode == 200) {
+        _cachedForecast = jsonDecode(response.body);
+        return _cachedForecast!;
+      } else {
+        return Future.error("error happened while making api call");
+      }
+    } catch (e) {
+      throw Exception("An error happend : $e");
+    }
+  }
+
+  //1b. function to get temperature forecast for 3 days
+  Future<List<List<String>>> getDetailsAboutForecast() async {
+    try {
+      final jsonData = await makeApiCalls();
+      List<List<String>> forecastData = [];
+      for (var forecastDay in jsonData['forecast']['forecastday']) {
+        final iconUrl = forecastDay['day']['condition']['icon'];
+        final currentTemp = forecastDay['day']['maxtemp_c'];
+        forecastData.add([iconUrl.toString(), currentTemp.toString()]);
+      }
+      return forecastData;
+    } catch (err) {
+      throw Exception("error happened : $err");
+    }
+  }
+
   void clearCache() {
     _cachedData = null;
+    _cachedForecast = null;
   }
 }

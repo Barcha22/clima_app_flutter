@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'pages/main_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
@@ -14,7 +14,7 @@ class MainPage extends StatelessWidget {
     return MaterialApp(
       initialRoute: "/",
       routes: {
-        "/": (context) => HomePage(), //
+        "/": (context) => MainPage(), //
       },
       theme: ThemeData(
         useMaterial3: true, //
@@ -26,7 +26,7 @@ class MainPage extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
     );
   }
 }
