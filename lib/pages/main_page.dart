@@ -10,23 +10,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  final List<Widget> _pages = [HomePage(), SearchPage()];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [HomePage(), SearchPage()];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 300),
-        transitionBuilder: (child, animation) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(1, 0), //
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          );
-        },
-        child: _pages[_selectedIndex],
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
+
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -43,12 +39,30 @@ class _MainPageState extends State<MainPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.home, color: Colors.white),
-              Icon(Icons.search, color: Colors.white), //
+              GestureDetector(
+                child: Icon(
+                  Icons.home,
+                  color: _selectedIndex == 0 ? Colors.blue : Colors.white,
+                ), //
+                onTap: () => changePage(0),
+              ),
+              GestureDetector(
+                child: Icon(
+                  Icons.search,
+                  color: _selectedIndex == 1 ? Colors.blue : Colors.white,
+                ), //
+                onTap: () => changePage(1),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void changePage(int newIndex) {
+    setState(() {
+      _selectedIndex = newIndex;
+    });
   }
 }

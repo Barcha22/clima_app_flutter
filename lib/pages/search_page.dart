@@ -7,16 +7,50 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  final _textController = TextEditingController();
+  final cities = ["berlin", "newyork"];
+  bool _isFocused = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF001E34), Color(0xFF00866E)],
+        ),
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            "This Page is under development",
-            style: TextStyle(fontSize: 50, color: Colors.white),
+          SizedBox(height: 100),
+
+          // Searchbar
+          SizedBox(
+            width: 350,
+            child: Focus(
+              onFocusChange:
+                  (value) => {
+                    setState(() {
+                      _isFocused = value;
+                    }),
+                  },
+              child: TextField(
+                decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "A city name...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10), //
+                  ),
+                ),
+              ),
+            ),
           ),
+
+          //--------function to check if the search bar is focused---------
         ],
       ),
     );

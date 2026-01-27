@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
-import 'pages/main_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:clima_app/pages/main_page.dart';
 
 Future<void> main() async {
   await dotenv.load();
-  runApp(const MainPage());
+  runApp(const MyApp());
 }
 
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       initialRoute: "/",
       routes: {
-        "/": (context) => MainPage(), //
+        "/": (context) => const MainPage(), //
       },
-      theme: ThemeData(
-        useMaterial3: true, //
-      ),
+      theme: ThemeData(useMaterial3: true),
       darkTheme: ThemeData(
-        useMaterial3: true, //
+        useMaterial3: true,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,

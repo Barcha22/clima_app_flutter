@@ -98,6 +98,39 @@ class TemperatureServices {
     }
   }
 
+  //2. function to get current temp only for a location that is searched
+  Future<List<String>> getCurrentTempForSpecificCity(city) async {
+    try {
+      final _city = city;
+      //get the apikey
+      final apiKey = dotenv.env["MY_API"] ?? '';
+      if (apiKey.isEmpty) {
+        throw Exception("Api key not found in .env");
+      }
+      //make api call
+      final response = await http.get(
+        Uri.parse(
+          "http://api.weatherapi.com/v1/current.json?key=$apiKey&q=${_city}",
+        ),
+      );
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        return [
+          jsonData['current']['temp_c']
+              .toString(), //current temperature in celcius
+          jsonData['current']['condition']['icon']
+              .toString(), //current temperatures icon
+          jsonData['current']['condition']['text']
+              .toString(), //current temperatures condition
+        ];
+      } else {
+        return Future.error("Future Error happened");
+      }
+    } catch (err) {
+      throw Exception("An error occured while making api call.");
+    }
+  }
+
   void clearCache() {
     _cachedData = null;
     _cachedForecast = null;

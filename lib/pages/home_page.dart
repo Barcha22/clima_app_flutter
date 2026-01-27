@@ -60,6 +60,13 @@ class _HomePageState extends State<HomePage> {
   //function to refresh data
   Future<void> _onRefresh() async {
     try {
+      // Reset data to show fetching status
+      setState(() {
+        locationName = "fetching...";
+        currentTemperature = "fetching...";
+        currentTemperatureCondition = "fetching";
+      });
+
       temperatureServices.clearCache(); //first clearing cache for fresh data
 
       await Future.wait([
@@ -68,8 +75,12 @@ class _HomePageState extends State<HomePage> {
         _fetchForecast(),
       ]);
 
+      // Add a small delay so the user sees the refresh indicator
+      await Future.delayed(Duration(milliseconds: 500));
+
       _refreshController.refreshCompleted();
     } catch (err) {
+      print("Refresh error: $err");
       _refreshController.refreshFailed();
     }
   }
@@ -123,125 +134,119 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SmartRefresher(
-      controller: _refreshController,
-      onRefresh: _onRefresh,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          //to show the background gradient
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF001E34), Color(0xFF00866E)],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF001E34), Color(0xFF00866E)],
+        ),
+      ),
+      child: SmartRefresher(
+        controller: _refreshController,
+        enablePullDown: true,
+        header: WaterDropMaterialHeader(
+          color: Colors.white,
+          // waterDropColor: Colors.white,
+        ),
+        onRefresh: _onRefresh,
+        child: ListView(
+          padding: EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+          children: [
+            SizedBox(height: 140),
+            // Date
+            Center(
+              child: Text(
+                "${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w300,
                 ),
               ),
             ),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              //day
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+            SizedBox(height: 20),
 
-                child: Text(
-                  "${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}",
-                  style: TextStyle(
-                    fontSize: 28, //
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ),
-              //location
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                height: 70,
-                child: Text(
-                  locationName,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: Colors.white, //
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              //icon
-              Container(
-                margin: EdgeInsets.only(top: 30),
-                height: 120,
-                child: GetIconFromUrl(
-                  url: iconUrl,
+            // Location
+            Center(
+              child: Text(
+                locationName,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28,
                   color: Colors.white,
-                  size: 120,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              //description
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                height: 30,
-                child: Text(
-                  currentTemperatureCondition,
-                  style: TextStyle(
-                    color: Colors.white, //
-                    fontSize: 25,
-                  ),
+            ),
+            SizedBox(height: 30),
+
+            // Weather Icon
+            Center(
+              child: GetIconFromUrl(
+                url: iconUrl,
+                color: Colors.white,
+                size: 100,
+              ),
+            ),
+            SizedBox(height: 16),
+
+            // Weather Description
+            Center(
+              child: Text(
+                currentTemperatureCondition,
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ),
+            SizedBox(height: 16),
+
+            // Current Temperature
+            Center(
+              child: Text(
+                '$currentTemperature °C',
+                style: TextStyle(
+                  fontSize: 60,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              //current temperature
-              Container(
-                margin: EdgeInsets.only(top: 5),
-                height: 120,
-                child: Text(
-                  '$currentTemperature °C',
-                  style: TextStyle(
-                    fontSize: 60,
-                    color: Colors.white, //
-                    fontWeight: FontWeight.w500,
-                  ),
+            ),
+            SizedBox(height: 40),
+
+            // Forecast
+            if (forecast.isEmpty)
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.all(30),
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              )
+            else
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    for (int i = 0; i < forecast.length; i++)
+                      customCard.buildCard(
+                        GetIconFromUrl(
+                          url: forecast[i][0],
+                          color: Colors.white,
+                          size: 50,
+                        ),
+                        "${forecast[i][1]}°C",
+                        text:
+                            i == 0
+                                ? "Today"
+                                : i == 1
+                                ? "Tomorrow"
+                                : "Day After",
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: 20,
-            child:
-                forecast.isEmpty
-                    ? Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    )
-                    : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (int i = 0; i < forecast.length; i++)
-                          Container(
-                            margin: EdgeInsets.only(right: 10),
-                            child: customCard.buildCard(
-                              GetIconFromUrl(
-                                url: forecast[i][0],
-                                color: Colors.white, //
-                                size: 50,
-                              ),
-                              "${forecast[i][1]}°C", // Max temp,
-                              text:
-                                  i == 0
-                                      ? "Today"
-                                      : i == 1
-                                      ? "Tomorrow"
-                                      : "Day After",
-                            ),
-                          ),
-                      ],
-                    ),
-          ),
-        ],
+            SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
