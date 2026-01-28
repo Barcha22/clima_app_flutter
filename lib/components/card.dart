@@ -12,10 +12,15 @@ class CustomCard {
           height: 100,
           width: 100,
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.black, //
-            ),
+            border: Border.all(color: Colors.white),
             borderRadius: BorderRadius.circular(17),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

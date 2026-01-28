@@ -4,6 +4,7 @@ import 'package:clima_app/services/get_location.dart';
 import 'package:clima_app/components/get_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:clima_app/components/card.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   String iconUrl = "";
   String currentTemperatureCondition = "fetching";
   List<List<String>> forecast = [];
+  bool _isLoading = true;
 
   DateTime now = DateTime.now();
   static const List<String> days = [
@@ -52,22 +54,24 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchLocation();
-    _fetchTemperature();
-    _fetchForecast();
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    setState(() => _isLoading = true);
+    await Future.wait([
+      _fetchLocation(),
+      _fetchTemperature(),
+      _fetchForecast(),
+    ]);
+    setState(() => _isLoading = false);
   }
 
   //function to refresh data
   Future<void> _onRefresh() async {
     try {
-      // Reset data to show fetching status
-      setState(() {
-        locationName = "fetching...";
-        currentTemperature = "fetching...";
-        currentTemperatureCondition = "fetching";
-      });
-
-      temperatureServices.clearCache(); //first clearing cache for fresh data
+      setState(() => _isLoading = true);
+      temperatureServices.clearCache();
 
       await Future.wait([
         _fetchLocation(),
@@ -75,12 +79,12 @@ class _HomePageState extends State<HomePage> {
         _fetchForecast(),
       ]);
 
-      // Add a small delay so the user sees the refresh indicator
       await Future.delayed(Duration(milliseconds: 500));
-
+      setState(() => _isLoading = false);
       _refreshController.refreshCompleted();
     } catch (err) {
       print("Refresh error: $err");
+      setState(() => _isLoading = false);
       _refreshController.refreshFailed();
     }
   }
@@ -132,6 +136,136 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  String _getDateLabel(int daysOffset) {
+    DateTime date = now.add(Duration(days: daysOffset));
+    String monthName = months[date.month - 1].toLowerCase();
+    return "$monthName, ${date.day}";
+  }
+
+  // functions for skeleton loaders
+  Widget _buildLocationSkeleton() {
+    return SizedBox(
+      height: 35,
+      width: 200,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[200]!,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTemperatureSkeleton() {
+    return SizedBox(
+      height: 250,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[200]!,
+            child: Container(
+              height: 100,
+              width: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[200]!,
+            child: Container(
+              height: 20,
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[200]!,
+            child: Container(
+              height: 70,
+              width: 220,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForecastSkeleton() {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (int i = 0; i < 3; i++)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[200]!,
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[200]!,
+                    child: Container(
+                      height: 16,
+                      width: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[200]!,
+                    child: Container(
+                      height: 16,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -146,6 +280,7 @@ class _HomePageState extends State<HomePage> {
         controller: _refreshController,
         enablePullDown: true,
         header: WaterDropMaterialHeader(
+          backgroundColor: Colors.transparent,
           color: Colors.white,
           // waterDropColor: Colors.white,
         ),
@@ -169,81 +304,86 @@ class _HomePageState extends State<HomePage> {
 
             // Location
             Center(
-              child: Text(
-                locationName,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child:
+                  _isLoading
+                      ? _buildLocationSkeleton()
+                      : Text(
+                        locationName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
             ),
             SizedBox(height: 30),
 
             // Weather Icon
-            Center(
-              child: GetIconFromUrl(
-                url: iconUrl,
-                color: Colors.white,
-                size: 100,
-              ),
-            ),
-            SizedBox(height: 16),
+            _isLoading
+                ? Center(child: _buildTemperatureSkeleton())
+                : Column(
+                  children: [
+                    Center(
+                      child: GetIconFromUrl(
+                        url: iconUrl,
+                        color: Colors.white,
+                        size: 100,
+                      ),
+                    ),
+                    SizedBox(height: 16),
 
-            // Weather Description
-            Center(
-              child: Text(
-                currentTemperatureCondition,
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
-            SizedBox(height: 16),
+                    // Weather Description
+                    Center(
+                      child: Text(
+                        currentTemperatureCondition,
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                    SizedBox(height: 16),
 
-            // Current Temperature
-            Center(
-              child: Text(
-                '$currentTemperature °C',
-                style: TextStyle(
-                  fontSize: 60,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+                    // Current Temperature
+                    Center(
+                      child: Text(
+                        '$currentTemperature °C',
+                        style: TextStyle(
+                          fontSize: 60,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
             SizedBox(height: 40),
 
             // Forecast
-            if (forecast.isEmpty)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.all(30),
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              )
-            else
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (int i = 0; i < forecast.length; i++)
-                      customCard.buildCard(
-                        GetIconFromUrl(
-                          url: forecast[i][0],
-                          color: Colors.white,
-                          size: 50,
-                        ),
-                        "${forecast[i][1]}°C",
-                        text:
-                            i == 0
-                                ? "Today"
-                                : i == 1
-                                ? "Tomorrow"
-                                : "Day After",
+            _isLoading
+                ? _buildForecastSkeleton()
+                : (forecast.isEmpty
+                    ? Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(30),
+                        child: CircularProgressIndicator(color: Colors.white),
                       ),
-                  ],
-                ),
-              ),
+                    )
+                    : Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          for (int i = 0; i < forecast.length; i++)
+                            customCard.buildCard(
+                              GetIconFromUrl(
+                                url: forecast[i][0],
+                                color: Colors.white,
+                                size: 50,
+                              ),
+                              "${forecast[i][1]}°C",
+                              text: _getDateLabel(i),
+                            ),
+                        ],
+                      ),
+                    )),
             SizedBox(height: 40),
           ],
         ),
